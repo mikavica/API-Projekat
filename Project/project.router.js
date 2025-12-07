@@ -14,4 +14,7 @@ ProjectRouter.patch("/:id", projectService.updateProject);
 
 ProjectRouter.delete("/:id", projectService.deleteProject);
 
+ProjectRouter.post("/:id/add-todo", projectService.addTodoToProject);
+
+
 module.exports = { ProjectRouter };

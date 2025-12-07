@@ -5,14 +5,11 @@ const CreateProjectData = z.object({
   description: z.string().optional(),                  
   todos: z.array(z.string()).optional(),              
 });
-
-
 const UpdateProjectData = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   todos: z.array(z.string()).optional(),
 });
-
 
 module.exports = {
   CreateProjectData,

@@ -224,3 +224,5 @@ Or even simpler:
 - **500 Error**: Check server logs and MongoDB connection
 - **Connection Refused**: Make sure the server is running on port 5000
 
+
+

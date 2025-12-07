@@ -1,30 +1,39 @@
 const schemas = require("./todos.schemes");
-const {Todo} = require("./todos.db");
-
+const { Todo } = require("./todos.db");
 
 async function getTodos(req, res) {
-  console.log("radi");
-  const data = await Todo.find();
-  return res.json(data);
+  try {
+    console.log("radi");
+
+    const data = await Todo.find({ userId: req.userId });
+
+    return res.json(data);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json("something went wrong");
+  }
 }
+
 async function deletetodo(req, res) {
   try {
     const id = req.params.id.trim();
-    console.log("Trying to delete ID:", id);
 
-    const deletedTodo = await Todo.findByIdAndDelete(id);
 
-    if (!deletedTodo) {
-      return res.status(404).json("Todo not found");
+    const todo = await Todo.findOne({ _id: id, userId: req.userId });
+    if (!todo) {
+      return res.status(404).json("Todo not found or not yours");
     }
 
-    console.log("Deleted todo:", deletedTodo);
+
+    await Todo.deleteOne({ _id: id });
+
     return res.status(200).json("Todo successfully deleted");
   } catch (err) {
-    console.error("Delete error:", err);
-    return res.status(500).json("Something went wrong");
+    console.error(err);
+    return res.status(500).json("something went wrong");
   }
 }
+
 async function createtodo(req, res) {
   try {
     const data = schemas.CreateTodoData.safeParse(req.body);
@@ -34,6 +43,8 @@ async function createtodo(req, res) {
 
     const newtodo = await Todo.create({
       title: data.data.title,
+      deadline: data.data.deadline || null,
+      userId: req.userId,
     });
 
     return res.json(newtodo);
@@ -45,19 +56,27 @@ async function updateTodo(req, res) {
   try {
     const id = req.params.id.trim();
 
-    const existingtodo = await Todo.findById(id);
-    if (!existingtodo) {
-      return res.status(404).json("not found");
+    const data = schemas.UpdateTodoData.safeParse(req.body);
+    if (!data.success) {
+      return res.status(400).json(data.error);
     }
-    await Todo.findByIdAndUpdate(id, {
-      isCompleted: true,
+
+    const existingTodo = await Todo.findOne({ _id: id, userId: req.userId });
+    if (!existingTodo) {
+      return res.status(404).json("Todo not found or not yours");
+    }
+
+    const updatedTodo = await Todo.findByIdAndUpdate(id, data.data, {
+      new: true,
     });
-    return res.json("cao");
+
+    return res.json(updatedTodo);
   } catch (error) {
     console.error(error);
     return res.status(500).json("something went wrong");
   }
 }
+
 module.exports = {
   createtodo,
   updateTodo,
